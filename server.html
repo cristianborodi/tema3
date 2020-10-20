@@ -1,0 +1,78 @@
+<?php 
+	session_start();
+	$db = mysqli_connect('localhost', 'root', '', 'crud');
+
+	// initialize variables
+	$name = "";
+	$address = "";
+	$id = 0;
+	$update = false;
+
+	if (isset($_POST['save'])) {
+		$name = $_POST['name'];
+		$address = $_POST['address'];
+
+		mysqli_query($db, "INSERT INTO info (name, address) VALUES ('$name', '$address')"); 
+		$_SESSION['message'] = "Address saved"; 
+		header('location: index.html');
+	}
+if (isset($_POST['update'])) {
+	$id = $_POST['id'];
+	$name = $_POST['name'];
+	$address = $_POST['address'];
+
+	mysqli_query($db, "UPDATE info SET name='$name', address='$address' WHERE id=$id");
+	$_SESSION['message'] = "Address updated!"; 
+	header('location: index.html');
+}
+
+?>
+
+<?php if (isset($_SESSION['message'])): ?>
+	<div class="msg">
+		<?php 
+			echo $_SESSION['message']; 
+			unset($_SESSION['message']);
+		?>
+	</div>
+<?php endif ?>
+
+<?php $results = mysqli_query($db, "SELECT * FROM info"); ?>
+
+<table>
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Address</th>
+			<th colspan="2">Action</th>
+		</tr>
+	</thead>
+	
+	<?php while ($row = mysqli_fetch_array($results)) { ?>
+		<tr>
+			<td><?php echo $row['name']; ?></td>
+			<td><?php echo $row['address']; ?></td>
+			<td>
+				<a href="index.html?edit=<?php echo $row['id']; ?>" class="edit_btn" >Edit</a>
+			</td>
+			<td>
+				<a href="server.phpl?del=<?php echo $row['id']; ?>" class="del_btn">Delete</a>
+			</td>
+		</tr>
+	<?php } ?>
+</table>
+
+<?php 
+	if (isset($_GET['edit'])) {
+		$id = $_GET['edit'];
+		$update = true;
+		$record = mysqli_query($db, "SELECT * FROM info WHERE id=$id");
+
+		if (count($record) == 1 ) {
+			$n = mysqli_fetch_array($record);
+			$name = $n['name'];
+			$address = $n['address'];
+		}
+	}
+?>
+
